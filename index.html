@@ -374,11 +374,74 @@ body.night .yswitch .thumb{transform:translateX(44px)}
 .ru-arrow{color:var(--mut);font:600 10px var(--fm);letter-spacing:.3em}
 .ru-band{font:600 12px var(--fm);letter-spacing:.2em;margin-top:14px}
 
+/* ============ ACCOUNT GATE ============ */
+/* No background of its own — the body tint and the ambient orbs show through,
+   so the gate carries whichever theme body.day / body.night is set to. */
+#gate{position:fixed;inset:0;z-index:150;display:none;align-items:center;justify-content:center;
+  padding:24px;overflow-y:auto}
+#gate.on{display:flex}
+body.gated #bar,body.gated #dock{display:none}   /* no empty chrome behind the gate */
+.gate-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px}
+.gate-theme{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--flat);
+  color:var(--ink2);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:.18s}
+.gate-theme:hover{color:var(--acc);border-color:color-mix(in srgb,var(--acc) 45%,var(--line))}
+.gate-theme svg{width:16px;height:16px}
+.gate-card{width:min(432px,94vw);background:var(--glass);-webkit-backdrop-filter:blur(30px) saturate(160%);
+  backdrop-filter:blur(30px) saturate(160%);border:1px solid var(--edge);border-radius:26px;padding:30px 28px;
+  box-shadow:0 30px 80px -20px rgba(0,0,0,calc(var(--sh)*1.2));animation:pop .4s cubic-bezier(.34,1.4,.64,1)}
+.gate-mark{width:46px;height:46px;border-radius:50%;border:1px solid var(--line2);display:flex;
+  align-items:center;justify-content:center;color:var(--acc);flex-shrink:0}
+.gate-mark svg{width:21px;height:21px}
+.gate-k{font:600 9px var(--fm);letter-spacing:.34em;color:var(--mut)}
+.gate-t{font:800 24px var(--fd);letter-spacing:-.01em;margin:5px 0 7px}
+.gate-sub{color:var(--ink2);font-size:12.5px;line-height:1.6}
+.gate-err{color:var(--bad);font:600 10px var(--fm);letter-spacing:.08em;min-height:13px;margin:13px 0 6px}
+.gate-foot{margin-top:15px;color:var(--mut);font-size:11.5px;text-align:center}
+.gate-foot b{color:var(--acc);cursor:pointer;font-weight:600}
+.acc-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+.acc-row:last-child{border:0}
+.acc-av{width:30px;height:30px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;
+  justify-content:center;font:700 12px var(--fd);color:var(--acc);
+  background:color-mix(in srgb,var(--acc) 16%,transparent);
+  border:1px solid color-mix(in srgb,var(--acc) 40%,transparent)}
+.acc-nm{flex:1;min-width:0;font-weight:600;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acc-meta{font:600 9.5px var(--fm);letter-spacing:.06em;color:var(--mut);flex-shrink:0}
+
+/* ============ LEADERBOARD ============ */
+.lb-grid{display:grid;grid-template-columns:1.62fr 1fr;gap:16px;align-items:start}
+.lb-rank{display:flex;align-items:center;gap:12px;padding:12px 10px;border-bottom:1px solid var(--line)}
+.lb-rank:last-child{border-bottom:0}
+.lb-rank.me{background:color-mix(in srgb,var(--acc) 9%,transparent);border-radius:16px;
+  border-bottom-color:transparent}
+.lb-ps{font:800 16px var(--fd);color:var(--mut);width:28px;flex-shrink:0;text-align:center}
+.lb-rank.me .lb-ps{color:var(--acc)}
+.lb-rank.p1 .lb-ps{color:#FFC94A}.lb-rank.p2 .lb-ps{color:#BFCDC8}.lb-rank.p3 .lb-ps{color:#D59A62}
+.lb-id{flex:1;min-width:0}
+.lb-cs{font:600 13.5px var(--fd);display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.lb-rk{font:600 9px var(--fm);letter-spacing:.12em;color:var(--mut);margin-top:3px}
+.lb-prog{width:124px;flex-shrink:0}
+.lb-xp{text-align:right;flex-shrink:0;min-width:62px}
+.lb-xp b{display:block;font:700 14px var(--fd);color:var(--acc)}
+.lb-xp span{font:600 8.5px var(--fm);letter-spacing:.14em;color:var(--mut)}
+.tag-sim{font:600 8px var(--fm);letter-spacing:.1em;color:var(--mut);border:1px solid var(--line2);
+  border-radius:999px;padding:2px 6px}
+.lb-you{text-align:center;padding:4px 0 16px}
+.lb-you b{display:block;font:800 clamp(32px,5vw,44px)/1 var(--fd);color:var(--acc)}
+.lb-you span{font:600 9px var(--fm);letter-spacing:.2em;color:var(--mut)}
+.tier{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:11px}
+.tier:last-child{border:0}
+.tier.on .tier-n{color:var(--acc)}
+.tier-d{width:7px;height:7px;border-radius:50%;background:var(--line2);flex-shrink:0}
+.tier.cl .tier-d{background:var(--acc)}
+.tier.on .tier-d{box-shadow:0 0 0 4px color-mix(in srgb,var(--acc) 22%,transparent)}
+.tier-n{flex:1;font:600 10px var(--fm);letter-spacing:.1em;color:var(--ink2)}
+.tier-x{font:600 9.5px var(--fm);color:var(--mut)}
+
 /* ============ RESPONSIVE ============ */
-@media (max-width:1020px){.dgrid,.sy-grid,.sb-grid,.syn-grid{grid-template-columns:1fr}.board{grid-template-columns:1fr 1fr}}
+@media (max-width:1020px){.dgrid,.sy-grid,.sb-grid,.syn-grid,.lb-grid{grid-template-columns:1fr}.board{grid-template-columns:1fr 1fr}}
 @media (max-width:880px){
   #dock{padding:6px 8px}.dbtn{width:50px}
-  .bar-t,.xpcap{display:none}
+  .bar-t,.xpcap,.lb-prog,.pill-l{display:none}
   #bar{gap:8px}
   .board{grid-template-columns:1fr}
   .q-side{display:none}
@@ -406,6 +469,7 @@ body.night .yswitch .thumb{transform:translateX(44px)}
 <nav id="dock" class="g"></nav>
 <div id="toasts"></div>
 <div id="overlay"></div>
+<div id="gate"></div>
 
 <!-- GUARD SCRIPT: never lets a script fault trap the UI -->
 <script>
@@ -479,11 +543,14 @@ function toast(msg,type){ type=type||'ok';
 /* ---------------- SAFE STORAGE ---------------- */
 function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
 function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+function lsDel(k){ try{ localStorage.removeItem(k); }catch(e){} }
 function ssGet(k){ try{ return sessionStorage.getItem(k); }catch(e){ return null; } }
 function ssSet(k,v){ try{ sessionStorage.setItem(k,v); }catch(e){} }
 
 /* ---------------- STATE ---------------- */
-var LS='prism-hsc';
+var LS='prism-hsc';            /* legacy single-operator vault (pre-accounts) */
+var ACC_LS='prism-accounts';   /* account registry */
+var SESS_LS='prism-session';   /* handle of the signed-in operator */
 function DEFAULTS(){ return {
   callsign:null, xp:0, year:12, view:'deck', lens:'mint', unlocks:['mint'],
   quests:{}, coopDone:false, badge:null, sandboxAchieved:false,
@@ -516,33 +583,152 @@ function DEFAULTS(){ return {
   syndicate:{name:'SEGFAULT SYNDICATE', pool:5220}
 };}
 var state=DEFAULTS();
-(function(){
+var ACTIVE=null;   /* handle of the signed-in operator; null while the gate is up */
+
+/* ---------------- ACCOUNTS ---------------- */
+function stateKey(u){ return LS+'::'+String(u).toLowerCase(); }
+function accAll(){
+  try{ var r=JSON.parse(lsGet(ACC_LS)); if(r&&Array.isArray(r.users)) return r; }catch(e){}
+  return {v:1,users:[]};
+}
+function accWrite(reg){ lsSet(ACC_LS,JSON.stringify(reg)); }
+function accFind(u){
+  var k=String(u||'').toLowerCase();
+  return accAll().users.filter(function(a){ return String(a.u).toLowerCase()===k; })[0]||null;
+}
+function accUpsert(acc){
+  var reg=accAll(), k=acc.u.toLowerCase(), hit=false;
+  reg.users=reg.users.map(function(a){ if(String(a.u).toLowerCase()===k){ hit=true; return acc; } return a; });
+  if(!hit) reg.users.push(acc);
+  accWrite(reg);
+}
+function accRemove(u){
+  var k=String(u).toLowerCase(), reg=accAll();
+  reg.users=reg.users.filter(function(a){ return String(a.u).toLowerCase()!==k; });
+  accWrite(reg); lsDel(stateKey(u));
+}
+/* Salted SHA-256. This keeps vaults separated on a shared machine — it is not
+   a server-side auth boundary, and anyone with the device can read local storage. */
+function randSalt(){
+  var b=new Uint8Array(8), s='';
+  try{ if(window.crypto&&crypto.getRandomValues) crypto.getRandomValues(b); }catch(e){}
+  for(var i=0;i<8;i++) s+=('0'+(b[i]||Math.floor(Math.random()*256)).toString(16)).slice(-2);
+  return s;
+}
+function weakDigest(s){
+  var h1=0x811c9dc5>>>0, h2=0x1000193>>>0;
+  for(var i=0;i<s.length;i++){
+    h1=Math.imul(h1^s.charCodeAt(i),0x01000193)>>>0;
+    h2=Math.imul(h2+s.charCodeAt(i)*(i+7),0x85ebca6b)>>>0;
+  }
+  return ('00000000'+h1.toString(16)).slice(-8)+('00000000'+h2.toString(16)).slice(-8);
+}
+function hashPass(pw,salt){
+  return new Promise(function(res){
+    var msg='prism$'+salt+'$'+pw;
+    try{
+      if(window.crypto&&crypto.subtle&&crypto.subtle.digest&&window.TextEncoder){
+        crypto.subtle.digest('SHA-256',new TextEncoder().encode(msg)).then(function(buf){
+          var out=''; new Uint8Array(buf).forEach(function(b){ out+=('0'+b.toString(16)).slice(-2); });
+          res('s256:'+out);
+        },function(){ res('fnv:'+weakDigest(msg)); });
+        return;
+      }
+    }catch(e){}
+    res('fnv:'+weakDigest(msg));
+  });
+}
+function hydrate(raw){
+  var d=DEFAULTS();
+  if(!raw||typeof raw!=='object') return d;
+  var proj=Object.assign(d.project,raw.project||{});
+  var synd=Object.assign(d.syndicate,raw.syndicate||{});
+  var s=Object.assign(d,raw);
+  s.project=proj; s.syndicate=synd;
+  return s;
+}
+function loadAccount(u){
+  ACTIVE=u;
+  var raw=null;
+  try{ raw=JSON.parse(lsGet(stateKey(u))); }catch(e){}
+  state=hydrate(raw);
+  state.callsign=u;
+  lsSet(SESS_LS,u);
+  save();
+}
+/* A vault written before accounts existed: folded into the first account created. */
+function legacyVault(){
   try{
     var raw=JSON.parse(lsGet(LS));
-    if(raw && typeof raw==='object'){
-      var d=DEFAULTS();
-      state=Object.assign(d,raw);
-      state.project=Object.assign(d.project,raw.project||{});
-      state.syndicate=Object.assign(d.syndicate,raw.syndicate||{});
-    }
-  }catch(e){ /* corrupt or blocked storage: run on defaults */ }
-})();
+    if(raw&&typeof raw==='object'&&(raw.xp>0||raw.callsign||(raw.mastery&&Object.keys(raw.mastery).length))) return raw;
+  }catch(e){}
+  return null;
+}
+function claimLegacy(u){
+  var raw=legacyVault(); if(!raw) return false;
+  raw.callsign=u;
+  lsSet(stateKey(u),JSON.stringify(raw));
+  lsDel(LS);
+  return true;
+}
+function signUp(u,pw,cb){
+  if(!/^[A-Za-z0-9_\-]{3,16}$/.test(u)) return cb('HANDLE :: 3–16 CHARS · LETTERS / NUMBERS / _ / -');
+  if(accFind(u)) return cb('HANDLE TAKEN :: PICK ANOTHER');
+  if(String(pw).length<6) return cb('PASSPHRASE :: 6 CHARACTERS MINIMUM');
+  var salt=randSalt();
+  hashPass(pw,salt).then(function(h){
+    accUpsert({u:u,salt:salt,hash:h,created:Date.now(),
+      sum:{xp:0,mastery:0,year:12,quests:0,faults:0,seen:Date.now()}});
+    var claimed=claimLegacy(u);
+    loadAccount(u);
+    cb(null,claimed);
+  });
+}
+function signIn(u,pw,cb){
+  var a=accFind(u);
+  if(!a) return cb('NO SUCH OPERATOR :: CHECK THE HANDLE OR CREATE AN ACCOUNT');
+  hashPass(pw,a.salt).then(function(h){
+    if(h!==a.hash) return cb('PASSPHRASE REJECTED');
+    loadAccount(a.u);
+    cb(null);
+  });
+}
+function signOut(prefill){
+  if(ACTIVE) save();
+  ACTIVE=null; lsDel(SESS_LS);
+  state=DEFAULTS();
+  EXAM=null; QVIEW=null;
+  if(synTimer){ clearInterval(synTimer); synTimer=null; }
+  closeModal();
+  $('#view').innerHTML=''; $('#bar').innerHTML=''; $('#dock').innerHTML='';
+  showGate('in',prefill);
+}
 var syncT=null;
 function save(){
-  try{ lsSet(LS,JSON.stringify(state)); }catch(e){}
+  if(!ACTIVE) return;
+  try{ lsSet(stateKey(ACTIVE),JSON.stringify(state)); }catch(e){}
+  var a=accFind(ACTIVE);
+  if(a){
+    a.sum={xp:state.xp,mastery:integrity(),year:state.year,
+      quests:Object.keys(state.quests).filter(function(k){ return state.quests[k]; }).length,
+      faults:state.diag.length,seen:Date.now()};
+    accUpsert(a);
+  }
   var d=$('#sync-dot');
   if(d){ d.classList.add('busy'); clearTimeout(syncT); syncT=setTimeout(function(){ d.classList.remove('busy'); },700); }
 }
 
 /* ---------------- RANKS & LENSES ---------------- */
+/* Each promotion costs more than the one before it — the gap widens from
+   500 XP at the bottom to 3,800 XP at the top of the ladder. */
 var RANKS=[
   {name:'SCRIPT KIDDIE',xp:0,band:'BAND 1–2'},
-  {name:'CODE CADET',xp:200,band:'BAND 3'},
-  {name:'PATCH RUNNER',xp:550,band:'BAND 3–4'},
-  {name:'BUG HUNTER',xp:1000,band:'BAND 4'},
-  {name:'SYSTEMS OPERATOR',xp:1700,band:'BAND 5'},
-  {name:'SECURITY ARCHITECT',xp:2600,band:'BAND 5–6'},
-  {name:'PRINCIPAL ARCHITECT',xp:3800,band:'BAND 6'}];
+  {name:'CODE CADET',xp:500,band:'BAND 3'},
+  {name:'PATCH RUNNER',xp:1400,band:'BAND 3–4'},
+  {name:'BUG HUNTER',xp:2800,band:'BAND 4'},
+  {name:'SYSTEMS OPERATOR',xp:4900,band:'BAND 5'},
+  {name:'SECURITY ARCHITECT',xp:7800,band:'BAND 5–6'},
+  {name:'PRINCIPAL ARCHITECT',xp:11600,band:'BAND 6'}];
 var LENSES={
   mint:{name:'MINT LENS',acc:'#00E5A0',ink:'#04140D'},
   amber:{name:'AMBER LENS',acc:'#FFB43D',ink:'#231302'},
@@ -928,18 +1114,149 @@ function modal(html,wide){
 }
 function closeModal(){ var o=$('#overlay'); o.classList.remove('on'); o.innerHTML=''; }
  $('#overlay').addEventListener('click',function(e){ if(e.target===this) closeModal(); });
-function callsignModal(cur){
-  modal('<div class="m-h"><span>// OPERATOR REGISTRATION</span></div><div class="m-b">'+
-  '<p class="mtext">Identify yourself, engineer. This handle appears on your rank card, the syndicate roster and every diagnostic log.</p>'+
-  '<input id="cs-in" class="tin" maxlength="16" placeholder="e.g. stack_smasher" value="'+esc(cur||'')+'">'+
-  '<div class="mrow"><button class="btn btn-acc" id="cs-ok">REGISTER</button></div></div>');
-  $('#cs-ok').onclick=function(){
-    var v=$('#cs-in').value.trim();
-    if(!/^[A-Za-z0-9_\-]{3,16}$/.test(v)){ toast('HANDLE :: 3–16 chars, letters / numbers / _ / - only','warn'); return; }
-    state.callsign=v; save(); closeModal(); paintBar();
-    toast('OPERATOR REGISTERED :: '+esc(v));
+
+/* ---------------- GATE :: SIGN IN / CREATE ACCOUNT ---------------- */
+/* The gate predates any account, so it cannot take its theme from the year the
+   way the app does. It runs dark — the night shift the app opens into — unless
+   the operator has picked daylight on this device. */
+var THEME_LS='prism-gate-theme';
+function gateTheme(){ return lsGet(THEME_LS)==='day'?'day':'night'; }
+/* 'gated' rides alongside the theme class; bootApp and switchYear drop it by
+   reassigning className when the app proper takes over. */
+function applyGateTheme(t){ document.body.className=t+' gated'; }
+function isDark(){ return document.body.classList.contains('night'); }
+function toggleGateTheme(){
+  var next=isDark()?'day':'night';
+  applyGateTheme(next); lsSet(THEME_LS,next);
+  var b=$('#g-theme');
+  if(b){
+    b.innerHTML=iconHtml(next==='night'?'sun':'moon');
+    b.title=(next==='night'?'Switch to light':'Switch to dark');
+    b.setAttribute('aria-label',b.title);
+    refreshIcons();
+  }
+}
+var gateMode='in';
+function showGate(mode,prefill){
+  var reg=accAll();
+  gateMode=mode||(reg.users.length?'in':'up');
+  applyGateTheme(gateTheme());
+  $('#gate').classList.add('on');
+  renderGate(prefill);
+}
+function hideGate(){ var g=$('#gate'); g.classList.remove('on'); g.innerHTML=''; }
+function renderGate(prefill){
+  var reg=accAll(), has=reg.users.length>0, up=(gateMode==='up'), legacy=!!legacyVault();
+  var known=reg.users.slice().sort(function(a,b){ return ((b.sum&&b.sum.xp)||0)-((a.sum&&a.sum.xp)||0); });
+  var dark=isDark(), swapTo=(dark?'Switch to light':'Switch to dark');
+  $('#gate').innerHTML=
+  '<div class="gate-card">'+
+   '<div class="gate-top"><div class="gate-mark">'+iconHtml('aperture')+'</div>'+
+    '<button class="gate-theme" id="g-theme" type="button" title="'+swapTo+'" aria-label="'+swapTo+'">'+
+    iconHtml(dark?'sun':'moon')+'</button></div>'+
+   '<div class="gate-k">PRISM OPERATOR VAULT</div>'+
+   '<div class="gate-t">'+(up?'Create an account':'Sign in')+'</div>'+
+   '<div class="gate-sub">'+(up
+     ? 'Your handle appears on the rank card, the syndicate roster and the leaderboard. Progress is kept in this browser, under this account only.'
+     : 'Every operator keeps a separate vault — XP, mastery, quests and the major project.')+'</div>'+
+   (up&&legacy?'<div class="chip chip-acc" style="display:inline-block;margin-top:14px">UNCLAIMED PROGRESS FOUND — IT TRANSFERS TO THIS ACCOUNT</div>':'')+
+   '<label class="flabel" for="g-u">Callsign</label>'+
+   '<input id="g-u" class="tin" maxlength="16" autocomplete="username" placeholder="e.g. stack_smasher" value="'+esc(prefill||'')+'">'+
+   '<label class="flabel" for="g-p">Passphrase</label>'+
+   '<input id="g-p" class="tin" type="password" autocomplete="'+(up?'new-password':'current-password')+'" placeholder="'+(up?'6 characters minimum':'••••••')+'">'+
+   (up?'<label class="flabel" for="g-p2">Confirm passphrase</label>'+
+       '<input id="g-p2" class="tin" type="password" autocomplete="new-password">':'')+
+   '<div class="gate-err" id="g-err"></div>'+
+   '<button class="btn btn-acc" id="g-go" style="width:100%;justify-content:center">'+
+     iconHtml(up?'user-plus':'log-in')+(up?' CREATE ACCOUNT':' SIGN IN')+'</button>'+
+   '<div class="gate-foot">'+(up
+     ? (has?'Already registered? <b id="g-swap">Sign in</b>':'First operator on this device.')
+     : 'No account yet? <b id="g-swap">Create one</b>')+'</div>'+
+   (!up&&has?('<div style="margin-top:20px"><div class="sec-h"><span>Operators on this device</span></div>'+
+     known.map(function(a){
+       return '<div class="acc-row"><span class="acc-av">'+esc(a.u.slice(0,1).toUpperCase())+'</span>'+
+       '<span class="acc-nm">'+esc(a.u)+'</span>'+
+       '<span class="acc-meta">'+(((a.sum&&a.sum.xp)||0)).toLocaleString()+' XP</span>'+
+       '<button class="btn btn-sm" data-pick="'+esc(a.u)+'">USE</button></div>';
+     }).join('')+'</div>'):'')+
+  '</div>';
+  $('#g-theme').onclick=toggleGateTheme;
+  var swap=$('#g-swap');
+  if(swap) swap.onclick=function(){ gateMode=(gateMode==='up'?'in':'up'); renderGate($('#g-u').value.trim()); };
+  $('#g-go').onclick=gateSubmit;
+  $$('#gate .tin').forEach(function(i){
+    i.addEventListener('keydown',function(e){ if(e.key==='Enter') gateSubmit(); });
+  });
+  $$('#gate [data-pick]').forEach(function(b){
+    b.onclick=function(){ $('#g-u').value=b.getAttribute('data-pick'); $('#g-p').focus(); };
+  });
+  refreshIcons();
+  var f=$('#g-u'); if(f&&f.focus&&!prefill) f.focus(); else if(prefill) $('#g-p').focus();
+}
+function gateSubmit(){
+  var btn=$('#g-go'), err=$('#g-err');
+  if(!btn||btn.disabled) return;
+  var u=$('#g-u').value.trim(), p=$('#g-p').value;
+  err.textContent=''; btn.disabled=true;
+  function fail(m){ err.textContent=m; btn.disabled=false; }
+  if(gateMode==='up'){
+    if(p!==$('#g-p2').value) return fail('PASSPHRASES DO NOT MATCH');
+    signUp(u,p,function(e,claimed){
+      if(e) return fail(e);
+      hideGate(); bootApp();
+      toast('OPERATOR REGISTERED :: '+esc(u));
+      if(claimed) toast('EARLIER PROGRESS CLAIMED FOR THIS ACCOUNT','ok');
+    });
+  } else {
+    signIn(u,p,function(e){
+      if(e) return fail(e);
+      hideGate(); bootApp();
+      toast('VAULT UNLOCKED :: '+esc(u));
+    });
+  }
+}
+/* ---------------- ACCOUNT MENU ---------------- */
+function accountModal(){
+  var r=rankOf(state.xp), reg=accAll();
+  var others=reg.users.filter(function(a){ return String(a.u).toLowerCase()!==String(ACTIVE).toLowerCase(); });
+  modal('<div class="m-h"><span>// OPERATOR ACCOUNT</span>'+
+  '<button class="btn btn-sm" id="ac-x">CLOSE</button></div><div class="m-b">'+
+  '<div class="acc-row" style="border:0;padding-top:0">'+
+   '<span class="acc-av" style="width:40px;height:40px;font-size:15px">'+esc(String(ACTIVE).slice(0,1).toUpperCase())+'</span>'+
+   '<div class="acc-nm"><div style="font:700 15px var(--fd)">'+esc(ACTIVE)+'</div>'+
+   '<div class="lb-rk">'+r.name+' · '+state.xp.toLocaleString()+' XP · '+integrity()+'% MASTERY</div></div></div>'+
+  '<div class="frow" style="margin-top:4px">'+
+   '<button class="btn" id="ac-lb">'+iconHtml('trophy')+' LEADERBOARD</button>'+
+   '<button class="btn" id="ac-out">'+iconHtml('log-out')+' SIGN OUT</button></div>'+
+  (others.length?('<div style="margin-top:22px"><div class="sec-h"><span>Switch operator</span></div>'+
+    others.map(function(a){
+      return '<div class="acc-row"><span class="acc-av">'+esc(a.u.slice(0,1).toUpperCase())+'</span>'+
+      '<span class="acc-nm">'+esc(a.u)+'</span>'+
+      '<span class="acc-meta">'+(((a.sum&&a.sum.xp)||0)).toLocaleString()+' XP</span>'+
+      '<button class="btn btn-sm" data-sw="'+esc(a.u)+'">SWITCH</button></div>';
+    }).join('')+
+    '<div style="color:var(--mut);font-size:11px;margin-top:10px">Switching signs you out — the other operator enters their own passphrase.</div></div>'):'')+
+  '<div style="margin-top:22px;border-top:1px solid var(--line);padding-top:16px">'+
+   '<div style="color:var(--mut);font-size:11.5px;margin-bottom:10px">Deleting erases this account and its vault from this browser. There is no backup.</div>'+
+   '<button class="btn btn-bad" id="ac-del">'+iconHtml('trash-2')+' DELETE ACCOUNT</button></div>'+
+  '</div>');
+  $('#ac-x').onclick=closeModal;
+  $('#ac-lb').onclick=function(){ closeModal(); navigate('leaderboard'); };
+  $('#ac-out').onclick=function(){ signOut(); };
+  $$('#overlay [data-sw]').forEach(function(b){
+    b.onclick=function(){ signOut(b.getAttribute('data-sw')); };
+  });
+  var armed=false, del=$('#ac-del');
+  del.onclick=function(){
+    if(!armed){ armed=true; del.innerHTML=iconHtml('alert-triangle')+' CONFIRM DELETE'; refreshIcons();
+      setTimeout(function(){ if(armed&&del.parentNode){ armed=false; del.innerHTML=iconHtml('trash-2')+' DELETE ACCOUNT'; refreshIcons(); } },5000);
+      return; }
+    var gone=ACTIVE;
+    accRemove(gone);
+    ACTIVE=null;            /* before signOut, so nothing is written back */
+    signOut();
+    toast('ACCOUNT DELETED :: '+esc(gone),'warn');
   };
-  var inp=$('#cs-in'); if(inp&&inp.focus) inp.focus();
 }
 function typewrite(el,text,speed){
   speed=speed||13;
@@ -2885,7 +3202,8 @@ function renderExamResults(s){
 var DOCK=[['deck','Deck','compass'],['syllabus','Core','book-open'],['sandbox','Lab','terminal'],
   ['quests','Quests','swords'],['exam','Exam','clipboard-check'],['project','Project','folder-kanban']];
 var VIEW_META={deck:'Today',syllabus:'Syllabus Core',sandbox:'Code Lab',quests:'Cyber-Quest',
-  exam:'Assessment Bank',project:'Major Project',syndicate:'Coding Syndicate',insights:'Insights'};
+  exam:'Assessment Bank',project:'Major Project',syndicate:'Coding Syndicate',insights:'Insights',
+  leaderboard:'Leaderboard'};
 function paintBar(){
   var r=rankOf(state.xp);
   $('#bar').innerHTML=
@@ -2897,14 +3215,18 @@ function paintBar(){
    '<button id="yy12"'+(state.year===12?' class="on"':'')+'>Y12</button></div>'+
    '<div class="bar-r">'+
    '<button class="pill" data-nav="insights" title="Insights">'+iconHtml('activity')+'<span>'+integrity()+'%</span></button>'+
+   '<button class="pill" data-nav="leaderboard" title="Leaderboard">'+iconHtml('trophy')+'</button>'+
    '<button class="pill" data-nav="syndicate" title="Syndicate">'+iconHtml('users')+'</button>'+
+   '<button class="pill" id="bar-acc" title="Account">'+iconHtml('user')+
+   '<span class="pill-l">'+esc(state.callsign||'GUEST')+'</span></button>'+
    '<div class="xpcap" id="bar-xp"><span class="xp-n">'+state.xp.toLocaleString()+'</span>'+
    '<span class="xp-r">'+r.name+'</span><span class="sdot" id="sync-dot" title="vault sync"></span></div></div>';
   $('#bar-home').onclick=function(){ navigate('deck'); };
   $('#yy11').onclick=function(){ switchYear(11); };
   $('#yy12').onclick=function(){ switchYear(12); };
-  $$('#bar .pill').forEach(function(p){ p.onclick=function(){ navigate(p.getAttribute('data-nav')); }; });
-  $('#bar-xp').onclick=function(){ navigate('deck'); };
+  $$('#bar .pill[data-nav]').forEach(function(p){ p.onclick=function(){ navigate(p.getAttribute('data-nav')); }; });
+  $('#bar-acc').onclick=accountModal;
+  $('#bar-xp').onclick=function(){ navigate('leaderboard'); };
   refreshIcons();
 }
 function paintDock(){
@@ -2936,7 +3258,8 @@ function navigate(v){
 function renderView(){
   if(synTimer){ clearInterval(synTimer); synTimer=null; }
   var fn={deck:renderDeck,syllabus:renderSyllabus,sandbox:renderSandbox,quests:renderQuests,
-    exam:renderExam,project:renderProject,syndicate:renderSyndicate,insights:renderInsights}[state.view];
+    exam:renderExam,project:renderProject,syndicate:renderSyndicate,insights:renderInsights,
+    leaderboard:renderLeaderboard}[state.view];
   if(fn) fn();
   refreshIcons();
 }
@@ -3632,9 +3955,9 @@ function pjRepo(){
    VIEW :: SYNDICATE
 ================================================================ */
 var PEERS=[
- {id:'nina',cs:'nullptr_nina',rank:'BUG HUNTER',xp:1470,on:true},
- {id:'cafe',cs:'0xCAFE',rank:'SYSTEMS OPERATOR',xp:2110,on:true},
- {id:'void',cs:'voidling',rank:'PATCH RUNNER',xp:760,on:false}];
+ {id:'nina',cs:'nullptr_nina',xp:4180,mastery:71,quests:3,on:true},
+ {id:'cafe',cs:'0xCAFE',xp:6940,mastery:83,quests:4,on:true},
+ {id:'void',cs:'voidling',xp:1620,mastery:48,quests:1,on:false}];
 var RIVALS=[{name:'REGEX RAPTORS',pool:8420},{name:'BIG-O BANDITS',pool:7610},{name:'THE SEGFAULT SOCIETY',pool:6980}];
 var synTimer=null;
 function synFeed(who,msg){
@@ -3663,7 +3986,7 @@ function renderSyndicate(){
   '<span class="ig-xp">'+state.xp.toLocaleString()+' XP · '+rankOf(state.xp).name+'</span></div>'+
   PEERS.map(function(p){
     return '<div class="ig-row"><span class="ig-on'+(p.on?' on':'')+'"></span>'+
-    '<span style="flex:1">'+esc(p.cs)+'</span><span class="ig-xp">'+p.xp.toLocaleString()+' XP · '+p.rank+'</span></div>';
+    '<span style="flex:1">'+esc(p.cs)+'</span><span class="ig-xp">'+p.xp.toLocaleString()+' XP · '+rankOf(p.xp).name+'</span></div>';
   }).join('')+
   '<div class="mm-row" style="margin-top:12px;border-top:1px solid var(--line)"><span class="mm-code">POOL</span>'+
   '<span style="flex:1;font-weight:800;color:var(--acc)" id="syn-pool">'+state.syndicate.pool.toLocaleString()+'</span><span class="mm-pct">POOLED XP</span></div></div>'+
@@ -3671,7 +3994,8 @@ function renderSyndicate(){
   lb.map(function(r,i){
     return '<div class="lb-row'+(r.me?' me':'')+'"><span class="lb-pos">'+String(i+1).padStart(2,'0')+'</span>'+
     '<span class="lb-nm">'+esc(r.name)+'</span><span class="mm-pct">'+r.pool.toLocaleString()+'</span></div>';
-  }).join('')+'</div></div>'+
+  }).join('')+
+  '<div class="frow" style="margin-top:14px"><button class="btn btn-sm" id="syn-lb">'+iconHtml('trophy')+' FULL LEADERBOARD</button></div></div></div>'+
   '<div><div class="g gpad" style="margin-bottom:16px"><div class="sec-h"><span>Syndicate comms</span><span class="rt">ONLINE: '+(PEERS.filter(function(p){ return p.on; }).length+1)+'</span></div>'+
   '<div id="syn-feed">'+state.feed.map(function(f){
     return '<div class="feed-line"><span class="feed-who">'+esc(f.who)+'</span> :: '+esc(f.msg)+'</div>';
@@ -3697,6 +4021,7 @@ function renderSyndicate(){
     },3500);
   };
   $('#syn-in').addEventListener('keydown',function(e){ if(e.key==='Enter') $('#syn-send').click(); });
+  $('#syn-lb').onclick=function(){ navigate('leaderboard'); };
   $('#coop-go').onclick=openCoop;
   if(synTimer){ clearInterval(synTimer); synTimer=null; }
   synTimer=setInterval(function(){
@@ -3746,6 +4071,116 @@ function openCoop(){
     }
     refreshIcons();
   };
+  refreshIcons();
+}
+
+/* ================================================================
+   VIEW :: LEADERBOARD
+================================================================ */
+var lbTab='ops';
+function ladderRows(){
+  var mine=String(ACTIVE||'').toLowerCase();
+  var rows=accAll().users.map(function(a){
+    var s=a.sum||{}, me=(mine&&String(a.u).toLowerCase()===mine);
+    return {name:a.u, me:me, sim:false, on:me,
+      xp:me?state.xp:(s.xp||0),
+      mastery:me?integrity():(s.mastery||0),
+      quests:me?Object.keys(state.quests).filter(function(k){ return state.quests[k]; }).length:(s.quests||0),
+      seen:me?Date.now():(s.seen||a.created||0)};
+  });
+  PEERS.forEach(function(p){
+    rows.push({name:p.cs,me:false,sim:true,on:p.on,xp:p.xp,mastery:p.mastery,quests:p.quests,
+      seen:p.on?Date.now():Date.now()-864e5});
+  });
+  rows.sort(function(a,b){ return (b.xp-a.xp)||a.name.localeCompare(b.name); });
+  return rows;
+}
+function lastSeen(t){
+  if(!t) return 'NEVER';
+  var d=Date.now()-t;
+  if(d<9e5) return 'ONLINE';
+  if(d<36e5) return Math.round(d/6e4)+'M AGO';
+  if(d<864e5) return Math.round(d/36e5)+'H AGO';
+  return Math.round(d/864e5)+'D AGO';
+}
+function lbRowHtml(x,i){
+  var rk=rankOf(x.xp), nx=RANKS[rk.i+1];
+  var pct=nx?Math.min(100,Math.round((x.xp-rk.xp)/(nx.xp-rk.xp)*100)):100;
+  return '<div class="lb-rank'+(x.me?' me':'')+(i<3?' p'+(i+1):'')+'">'+
+   '<span class="lb-ps">'+(i+1)+'</span>'+
+   '<span class="acc-av">'+esc(x.name.slice(0,1).toUpperCase())+'</span>'+
+   '<div class="lb-id"><div class="lb-cs">'+
+     '<span class="ig-on'+(x.on?' on':'')+'" title="'+lastSeen(x.seen)+'"></span>'+esc(x.name)+
+     (x.me?'<span class="chip chip-acc">YOU</span>':'')+
+     (x.sim?'<span class="tag-sim">SIM</span>':'')+'</div>'+
+    '<div class="lb-rk">'+rk.name+' · '+x.mastery+'% MASTERY · '+x.quests+' SECTORS</div></div>'+
+   '<div class="lb-prog"><div class="meter"><i style="width:'+pct+'%"></i></div>'+
+    '<div class="lb-rk" style="margin-top:5px">'+(nx?(nx.xp-x.xp).toLocaleString()+' TO NEXT RANK':'MAX RANK')+'</div></div>'+
+   '<div class="lb-xp"><b>'+x.xp.toLocaleString()+'</b><span>XP</span></div></div>';
+}
+function renderLeaderboard(){
+  var rows=ladderRows();
+  var pos=-1;
+  rows.forEach(function(x,i){ if(x.me) pos=i; });
+  var above=pos>0?rows[pos-1]:null;
+  var r=rankOf(state.xp), nxt=RANKS[r.i+1];
+  var pct=nxt?Math.min(100,Math.round((state.xp-r.xp)/(nxt.xp-r.xp)*100)):100;
+  var pool=RIVALS.map(function(x){ return {name:x.name,pool:x.pool,me:false}; })
+    .concat([{name:state.syndicate.name,pool:state.syndicate.pool,me:true}])
+    .sort(function(a,b){ return b.pool-a.pool; });
+  var board=(lbTab==='ops')
+    ? rows.map(lbRowHtml).join('')
+    : pool.map(function(x,i){
+        return '<div class="lb-rank'+(x.me?' me':'')+(i<3?' p'+(i+1):'')+'">'+
+         '<span class="lb-ps">'+(i+1)+'</span>'+
+         '<span class="acc-av">'+iconHtml('users')+'</span>'+
+         '<div class="lb-id"><div class="lb-cs">'+esc(x.name)+(x.me?'<span class="chip chip-acc">YOUR CREW</span>':'')+'</div>'+
+         '<div class="lb-rk">POOLED XP ACROSS THE ROSTER</div></div>'+
+         '<div class="lb-xp"><b>'+x.pool.toLocaleString()+'</b><span>POOL</span></div></div>';
+      }).join('');
+  mount(
+  '<div class="vhead"><div class="v-kick">OPERATOR LADDER · THIS DEVICE + SYNDICATE NET</div>'+
+  '<div class="v-title">Leaderboard</div></div>'+
+  '<div class="lb-grid"><div>'+
+   '<div class="g gpad"><div class="sec-h"><span>'+(lbTab==='ops'?'Operators':'Syndicates')+'</span>'+
+    '<span class="rt"><span class="seg">'+
+     '<button id="lb-ops"'+(lbTab==='ops'?' class="on"':'')+'>OPERATORS</button>'+
+     '<button id="lb-syn"'+(lbTab==='syn'?' class="on"':'')+'>SYNDICATES</button></span></span></div>'+
+    board+
+    (lbTab==='ops'?'<div style="color:var(--mut);font-size:11px;margin-top:14px">'+
+     'Accounts registered in this browser rank alongside the syndicate net. Entries marked SIM are the simulated study group.</div>':'')+
+   '</div>'+
+  '</div><div>'+
+   '<div class="g gpad" style="margin-bottom:16px"><div class="sec-h"><span>Your standing</span></div>'+
+    '<div class="lb-you"><b>'+(pos>=0?'#'+(pos+1):'—')+'</b><span>OF '+rows.length+' OPERATORS</span></div>'+
+    '<div class="meter" style="height:8px"><i style="width:'+pct+'%"></i></div>'+
+    '<div class="lb-rk" style="margin-top:8px">'+r.name+' → '+(nxt?nxt.name:'MAX RANK')+' · '+pct+'%</div>'+
+    '<div class="mm-row" style="margin-top:12px"><span class="mm-code">XP</span>'+
+     '<span style="flex:1;font-weight:700">'+state.xp.toLocaleString()+'</span>'+
+     '<span class="mm-pct">'+(nxt?('+'+(nxt.xp-state.xp).toLocaleString()):'MAX')+'</span></div>'+
+    '<div class="mm-row"><span class="mm-code">MASTERY</span>'+
+     '<span style="flex:1;font-weight:700">'+integrity()+'%</span><span class="mm-pct">AVG</span></div>'+
+    '<div class="mm-row"><span class="mm-code">AHEAD</span>'+
+     '<span style="flex:1;font-weight:700">'+(above?esc(above.name):'nobody — top of the ladder')+'</span>'+
+     '<span class="mm-pct">'+(above?('+'+(above.xp-state.xp).toLocaleString()):'—')+'</span></div>'+
+    (above?('<div style="color:var(--ink2);font-size:12px;margin-top:12px">Bank '+
+      (above.xp-state.xp+1).toLocaleString()+' XP to take position #'+pos+'.</div>')
+     :'<div style="color:var(--ink2);font-size:12px;margin-top:12px">Nobody on this board is ahead of you. Hold the line.</div>')+
+   '</div>'+
+   '<div class="g gpad"><div class="sec-h"><span>Rank ladder</span><span class="rt">XP REQUIRED</span></div>'+
+   RANKS.map(function(x,i){
+     var cl=state.xp>=x.xp, on=(i===r.i);
+     var step=i?(x.xp-RANKS[i-1].xp):0;
+     return '<div class="tier'+(cl?' cl':'')+(on?' on':'')+'"><span class="tier-d"></span>'+
+     '<span class="tier-n">'+x.name+'</span>'+
+     '<span class="tier-x">'+x.xp.toLocaleString()+(step?(' · +'+step.toLocaleString()):'')+'</span></div>';
+   }).join('')+
+   '<div style="color:var(--mut);font-size:11px;margin-top:10px">Every promotion costs more than the last — '+
+   (RANKS[1].xp-RANKS[0].xp).toLocaleString()+' XP for the first, '+
+   (RANKS[RANKS.length-1].xp-RANKS[RANKS.length-2].xp).toLocaleString()+' XP for the last.</div></div>'+
+  '</div></div>');
+  $('#lb-ops').onclick=function(){ lbTab='ops'; renderLeaderboard(); };
+  $('#lb-syn').onclick=function(){ lbTab='syn'; renderLeaderboard(); };
   refreshIcons();
 }
 
@@ -3806,17 +4241,24 @@ function renderInsights(){
 /* ================================================================
    INIT (fault-tolerant)
 ================================================================ */
-try{ document.body.className=(state.year===12)?'night':'day'; }catch(e){ if(window.__prismFault) window.__prismFault(e.message); }
-try{ applyLens(); }catch(e){ if(window.console)console.error(e); }
-try{ paintBar(); }catch(e){ if(window.__prismFault) window.__prismFault('paintBar: '+e.message); }
-try{ paintDock(); }catch(e){ if(window.__prismFault) window.__prismFault('paintDock: '+e.message); }
-try{ renderView(); }catch(e){ if(window.__prismFault) window.__prismFault('renderView: '+e.message); }
-refreshIcons();
+function bootApp(){
+  try{ document.body.className=(state.year===12)?'night':'day'; }catch(e){ if(window.__prismFault) window.__prismFault(e.message); }
+  try{ applyLens(); }catch(e){ if(window.console)console.error(e); }
+  try{ paintBar(); }catch(e){ if(window.__prismFault) window.__prismFault('paintBar: '+e.message); }
+  try{ paintDock(); }catch(e){ if(window.__prismFault) window.__prismFault('paintDock: '+e.message); }
+  try{ renderView(); }catch(e){ if(window.__prismFault) window.__prismFault('renderView: '+e.message); }
+  refreshIcons();
+}
+(function boot(){
+  var sess=lsGet(SESS_LS);
+  if(sess&&accFind(sess)){ loadAccount(accFind(sess).u); bootApp(); return; }
+  try{ applyLens(); }catch(e){}
+  showGate();
+})();
 try{ if(!ssGet('prism-splash')) ssSet('prism-splash','1'); }catch(e){}
-setTimeout(function(){ if(!state.callsign) callsignModal(); },1900);
 setInterval(examTick,500);
 setInterval(function(){
-  if(state.year!==12||Math.random()>0.4) return;
+  if(!ACTIVE||state.year!==12||Math.random()>0.4) return;
   if(state.view==='syndicate') return;
   var fl=FEED_LINES[Math.floor(Math.random()*FEED_LINES.length)];
   pushTransmission(fl[0],fl[1]);
