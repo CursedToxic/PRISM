@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "updated": null,
+  "operators": [
+    {
+      "handle": "0xCAFE",
+      "xp": 6940,
+      "mastery": 83,
+      "quests": 4,
+      "year": 12,
+      "sim": true,
+      "updated": "2026-10-23T00:00:00.000Z"
+    },
+    {
+      "handle": "nullptr_nina",
+      "xp": 4180,
+      "mastery": 71,
+      "quests": 3,
+      "year": 12,
+      "sim": true,
+      "updated": "2026-10-23T00:00:00.000Z"
+    },
+    {
+      "handle": "voidling",
+      "xp": 1620,
+      "mastery": 48,
+      "quests": 1,
+      "year": 12,
+      "sim": true,
+      "updated": "2026-10-23T00:00:00.000Z"
+    }
+  ]
+}

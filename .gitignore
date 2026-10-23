@@ -1,0 +1,8 @@
+# transient files written by server.js
+leaderboard.json.tmp
+leaderboard.corrupt-*.json
+
+# macOS sidecars this volume creates (._index.html and ._PRISM-questions.js
+# were committed before this file existed — `git rm --cached` them to clear)
+._*
+.DS_Store

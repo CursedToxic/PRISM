@@ -140,6 +140,7 @@ body.night .yswitch .thumb{transform:translateX(44px)}
 .chip{font:600 9px var(--fm);letter-spacing:.1em;border:1px solid var(--line2);color:var(--ink2);
   padding:3px 9px;border-radius:999px;text-transform:uppercase}
 .chip-acc{border-color:color-mix(in srgb,var(--acc) 55%,transparent);color:var(--acc)}
+.chip-warn{border-color:color-mix(in srgb,var(--warn) 55%,transparent);color:var(--warn)}
 .meter{height:6px;background:var(--line);border-radius:99px;overflow:hidden}
 .meter i{display:block;height:100%;border-radius:99px;background:var(--acc)}
 .tin,.tsel,.tta{background:var(--flat);border:1px solid var(--line);color:var(--ink);font:400 13.5px var(--fd);
@@ -694,8 +695,9 @@ function signIn(u,pw,cb){
   });
 }
 function signOut(prefill){
-  if(ACTIVE) save();
+  if(ACTIVE){ save(); clearTimeout(lbPubT); lbPublish(); }   /* flush the debounce */
   ACTIVE=null; lsDel(SESS_LS);
+  if(lbTimer){ clearInterval(lbTimer); lbTimer=null; }
   state=DEFAULTS();
   EXAM=null; QVIEW=null;
   if(synTimer){ clearInterval(synTimer); synTimer=null; }
@@ -714,6 +716,7 @@ function save(){
       faults:state.diag.length,seen:Date.now()};
     accUpsert(a);
   }
+  lbPublishSoon();
   var d=$('#sync-dot');
   if(d){ d.classList.add('busy'); clearTimeout(syncT); syncT=setTimeout(function(){ d.classList.remove('busy'); },700); }
 }
@@ -1254,6 +1257,10 @@ function accountModal(){
     var gone=ACTIVE;
     accRemove(gone);
     ACTIVE=null;            /* before signOut, so nothing is written back */
+    clearTimeout(lbPubT);
+    lbReq('DELETE',null,'?handle='+encodeURIComponent(gone)).then(function(board){
+      lbRemote=board; lbOnline=true;
+    },function(){});
     signOut();
     toast('ACCOUNT DELETED :: '+esc(gone),'warn');
   };
@@ -1401,9 +1408,12 @@ function makeEditor(mountEl,opts){
    sorted round chr ord any all enumerate reversed isinstance, plus
    builtin exception constructors (Exception, ValueError, TypeError,
    IndexError, KeyError, ZeroDivisionError, RuntimeError,
-   AttributeError, NameError, StopIteration).
+   AttributeError, NameError, StopIteration),
+   COMPREHENSIONS — [x for x in xs if c], nested for clauses, tuple
+   targets, and the generator form any(c.isdigit() for c in pw)
+   (evaluated eagerly to a list rather than lazily).
    Not supported: imports, dicts, f-strings, ternary,
-   keyword arguments, generators, lambda, global/nonlocal.
+   keyword arguments, lambda, global/nonlocal.
 ================================================================ */
 var PY_KW=new Set(['if','elif','else','while','for','in','is','not','and','or','def','class','return','break','continue','pass','try','except','finally','raise','as','True','False','None']);
 function PyError(msg){ var e=new Error(msg); e.py=true; return e; }
@@ -1568,12 +1578,33 @@ function pyParseTokens(toks,exprOnly){
     if(isOP('+')){ next(); return parseUnary(); } return parsePower(); }
   function parsePower(){ var e=parsePostfix();
     if(isOP('**')){ next(); return {type:'Bin',op:'**',l:e,r:parseUnary(),line:e.line}; } return e; }
+  /* comprehension tail: `for a[, b] in iter [if cond]...`, one or more times.
+     Shared by [list comps], (generator exprs) and f(x for x in y). */
+  function compClauses(){
+    var clauses=[];
+    while(isKW('for')){
+      next();
+      var names=[expectID()];
+      while(isOP(',')&&next()) names.push(expectID());
+      eatKW('in');
+      var iter=parseExpr();
+      var ifs=[];
+      while(isKW('if')){ next(); ifs.push(parseExpr()); }
+      clauses.push({names:names,iter:iter,ifs:ifs});
+    }
+    return clauses;
+  }
   function parsePostfix(){
     var e=parseAtom();
     for(;;){
       if(isOP('(')){
         next(); var args=[];
-        if(!isOP(')')){ do{ args.push(parseExpr()); }while(isOP(',')&&next()); }
+        if(!isOP(')')){
+          args.push(parseExpr());
+          /* any(c.isdigit() for c in pw) — a bare generator must be the only argument */
+          if(isKW('for')) args=[{type:'Comp',elt:args[0],clauses:compClauses(),line:e.line}];
+          else while(isOP(',')&&next()) args.push(parseExpr());
+        }
         eatOP(')'); e={type:'Call',fn:e,args:args,line:e.line};
       } else if(isOP('[')){
         next();
@@ -1603,10 +1634,18 @@ function pyParseTokens(toks,exprOnly){
       if(t.v==='None') return {type:'Const',v:null};
       throw PyError("SyntaxError: unexpected keyword '"+t.v+"' (line "+t.line+')');
     }
-    if(t.t==='OP'&&t.v==='('){ var e2=parseExpr(); eatOP(')'); return e2; }
+    if(t.t==='OP'&&t.v==='('){
+      var e2=parseExpr();
+      if(isKW('for')){ var gc=compClauses(); eatOP(')'); return {type:'Comp',elt:e2,clauses:gc,line:t.line}; }
+      eatOP(')'); return e2;
+    }
     if(t.t==='OP'&&t.v==='['){
       var items=[];
-      if(!isOP(']')){ do{ items.push(parseExpr()); }while(isOP(',')&&next()); }
+      if(!isOP(']')){
+        items.push(parseExpr());
+        if(isKW('for')){ var lc=compClauses(); eatOP(']'); return {type:'Comp',elt:items[0],clauses:lc,line:t.line}; }
+        while(isOP(',')&&next()) items.push(parseExpr());
+      }
       eatOP(']'); return {type:'List',items:items};
     }
     throw PyError('SyntaxError: unexpected '+(t.t==='NL'?'end of line':("'"+t.v+"'"))+' (line '+t.line+')');
@@ -1629,6 +1668,13 @@ function pyParse(toks){ return pyParseTokens(toks).program; }
 /* ---------------- runtime ---------------- */
 var PY_STEP_LIMIT=700000, pySteps=0;
 function pyStep(){ if(++pySteps>PY_STEP_LIMIT){ var fe=PyError('RuntimeError: execution limit exceeded (possible infinite loop)'); fe.fatal=true; throw fe; } }
+/* the one place that decides what counts as iterable — for loops and comprehensions */
+function pyIterate(it){
+  if(Array.isArray(it)) return it.slice();
+  if(it instanceof PyRange) return Array.from(it);
+  if(typeof it==='string') return it.split('');
+  throw PyError('TypeError: '+pyTypeName(it)+' object is not iterable');
+}
 function PyEnv(parent){ this.vars=new Map(); this.parent=parent; }
 PyEnv.prototype.has=function(n){ var e=this; while(e){ if(e.vars.has(n)) return true; e=e.parent; } return false; };
 PyEnv.prototype.get=function(n){ var e=this; while(e){ if(e.vars.has(n)) return e.vars.get(n); e=e.parent; }
@@ -2028,6 +2074,31 @@ function pyEval(node,env){
   switch(node.type){
     case 'Num': case 'Str': case 'Const': return node.v;
     case 'List': return node.items.map(function(i){ return pyEval(i,env); });
+    /* [x for x in xs if c] and the generator form any(x for x in xs).
+       Each clause gets a child scope, so the loop name does not leak out
+       (Python 3 behaviour). Generators are evaluated eagerly to a list. */
+    case 'Comp': {
+      var out=[], cls=node.clauses;
+      (function run(ci,scope){
+        if(ci>=cls.length){ out.push(pyEval(node.elt,scope)); return; }
+        var cl=cls[ci], seq=pyIterate(pyEval(cl.iter,scope));
+        for(var q=0;q<seq.length;q++){
+          pyStep();
+          var inner=new PyEnv(scope);
+          if(cl.names.length===1) inner.set(cl.names[0],seq[q]);
+          else {
+            var tup=seq[q];
+            if(!Array.isArray(tup)||tup.length!==cl.names.length)
+              throw PyError('ValueError: unpacking requires '+cl.names.length+' values, got '+(Array.isArray(tup)?tup.length:1));
+            for(var u=0;u<cl.names.length;u++) inner.set(cl.names[u],tup[u]);
+          }
+          var keep=true;
+          for(var f=0;f<cl.ifs.length;f++){ if(!pyTruthy(pyEval(cl.ifs[f],inner))){ keep=false; break; } }
+          if(keep) run(ci+1,inner);
+        }
+      })(0,env);
+      return out;
+    }
     case 'Name':
       if(!env.has(node.v)&&PY_BUILTINS[node.v]) return PY_BUILTINS[node.v];
       try{ return env.get(node.v); }
@@ -2104,11 +2175,7 @@ function pyEval(node,env){
       }
       return null;
     case 'For': {
-      var it=pyEval(node.iter,env), items;
-      if(Array.isArray(it)) items=it.slice();
-      else if(it instanceof PyRange) items=Array.from(it);
-      else if(typeof it==='string') items=it.split('');
-      else throw PyError('TypeError: '+pyTypeName(it)+' object is not iterable');
+      var items=pyIterate(pyEval(node.iter,env));
       for(var q=0;q<items.length;q++){
         pyStep();
         if(node.names.length===1) env.set(node.names[0],items[q]);
@@ -2240,7 +2307,8 @@ function pyRunTests(code,tests){
 /* ================================================================
    SQL QUERY ENGINE — tokenizer · parser · executor (in-page)
    Supports: SELECT [DISTINCT] items FROM table [AS alias]
-   [INNER|LEFT [OUTER] JOIN table [AS alias] [ON cond]]...
+   [, table [AS alias]]...                     implicit (comma) join
+   [INNER|LEFT [OUTER]|CROSS JOIN table [AS alias] [ON cond]]...
    [WHERE cond] [GROUP BY exprs] [HAVING cond]
    [ORDER BY expr [ASC|DESC], ...] [LIMIT n [OFFSET m]]
    Items: * · t.* · expr [AS alias]
@@ -2250,7 +2318,7 @@ function pyRunTests(code,tests){
    IS [NOT] NULL ; concat: || ; strings '...' with '' escape.
    Multiple ;-separated statements run in sequence.
 ================================================================ */
-var SQL_KW=new Set(['select','distinct','as','from','join','inner','left','outer','on','where','and','or','not','in','between','is','null','like','group','by','having','order','asc','desc','limit','offset']);
+var SQL_KW=new Set(['select','distinct','as','from','join','inner','left','outer','cross','on','where','and','or','not','in','between','is','null','like','group','by','having','order','asc','desc','limit','offset']);
 var SQL_FUNCS=new Set(['count','sum','avg','min','max','upper','lower','length','round','abs']);
 var SQL_AGGS=new Set(['count','sum','avg','min','max']);
 function sqlTok(src){
@@ -2386,14 +2454,20 @@ function sqlParseAll(src){
     var from=[expectID(),aliasOpt()];
     var joins=[];
     for(;;){
-      var type=null;
-      if(isKW('JOIN')){ next(); type='INNER'; }
+      var type=null, comma=false;
+      /* FROM a, b — the implicit join: a cross product that WHERE then filters */
+      if(isOP(',')){ next(); type='CROSS'; comma=true; }
+      else if(isKW('JOIN')){ next(); type='INNER'; }
       else if(isKW('INNER')){ next(); eatKW('JOIN'); type='INNER'; }
       else if(isKW('LEFT')){ next(); if(isKW('OUTER')) next(); eatKW('JOIN'); type='LEFT'; }
+      else if(isKW('CROSS')){ next(); eatKW('JOIN'); type='CROSS'; }
       else break;
       var jt=[expectID(),aliasOpt()];
       var on=null;
-      if(isKW('ON')){ next(); on=parseExpr(); }
+      if(isKW('ON')){
+        if(comma) throw new Error("ON belongs to a JOIN — with 'FROM a, b' the condition goes in WHERE");
+        next(); on=parseExpr();
+      }
       joins.push({type:type,table:jt[0],alias:jt[1],on:on});
     }
     var where=null;
@@ -3257,6 +3331,7 @@ function navigate(v){
 }
 function renderView(){
   if(synTimer){ clearInterval(synTimer); synTimer=null; }
+  if(lbTimer&&state.view!=='leaderboard'){ clearInterval(lbTimer); lbTimer=null; }
   var fn={deck:renderDeck,syllabus:renderSyllabus,sandbox:renderSandbox,quests:renderQuests,
     exam:renderExam,project:renderProject,syndicate:renderSyndicate,insights:renderInsights,
     leaderboard:renderLeaderboard}[state.view];
@@ -3419,6 +3494,7 @@ var SNIPPETS=[
  {label:'desk check trace (py)',lang:'py',code:'# trace the classic exam loop\nx = 1\nresult = 1\nwhile x <= 5:\n    result = result * x\n    x = x + 1\n    print("x =", x - 1, "result =", result)\nprint("final:", result)'},
  {label:'join + aggregate (sql)',lang:'sql',code:'SELECT courses.title,\n       COUNT(*) AS enrolled,\n       AVG(enrolments.mark) AS avg_mark\nFROM courses\nJOIN enrolments ON courses.course_id = enrolments.course_id\nGROUP BY courses.title\nORDER BY avg_mark DESC;'},
  {label:'filter + limit (sql)',lang:'sql',code:'SELECT name, salary\nFROM staff\nWHERE faculty LIKE \'%TAS%\'\nORDER BY salary DESC\nLIMIT 3;'},
+ {label:'implicit join (sql)',lang:'sql',code:'-- Older style: list the tables, match them\n-- in WHERE. Same result as an INNER JOIN.\nSELECT courses.title,\n       COUNT(*) AS enrolled,\n       AVG(enrolments.mark) AS avg_mark\nFROM courses, enrolments\nWHERE courses.course_id = enrolments.course_id\nGROUP BY courses.title\nORDER BY avg_mark DESC;'},
  {label:'cartesian trap (sql)',lang:'sql',code:'-- No ON clause: every student pairs with\n-- every course (cartesian product).\nSELECT students.name, courses.title\nFROM students\nJOIN courses\nLIMIT 5;'},
  {label:'top of each group (sql)',lang:'sql',code:'-- Highest mark per course (HAVING filters\n-- groups, WHERE filters rows).\nSELECT course_id, MAX(mark) AS top\nFROM enrolments\nGROUP BY course_id\nHAVING MAX(mark) >= 80\nORDER BY top DESC;'}];
 function renderSandbox(){
@@ -3431,7 +3507,7 @@ function renderSandbox(){
   '<div class="sb-grid">'+
    '<div><div id="sb-ed"></div>'+
    (sbLang==='py'?'<div style="color:var(--ink2);font-size:11.5px;margin-top:10px">Python runtime: a real tokenizer / parser / evaluator in this page — classes, inheritance, methods, slicing, containment, comparison chaining, try / except / else / finally / raise, 30+ builtins. No imports, dicts or f-strings.</div>'
-     :'<div style="color:var(--ink2);font-size:11.5px;margin-top:10px">SQL engine: SELECT with JOIN / LEFT JOIN, WHERE, GROUP BY + HAVING, ORDER BY, LIMIT / OFFSET, DISTINCT, LIKE, IN, BETWEEN, IS NULL, aggregates and scalar functions — parsed and executed locally.</div>')+
+     :'<div style="color:var(--ink2);font-size:11.5px;margin-top:10px">SQL engine: SELECT with JOIN / LEFT JOIN / CROSS JOIN and the implicit <b style="color:var(--acc)">FROM a, b WHERE a.id = b.id</b> form, GROUP BY + HAVING, ORDER BY, LIMIT / OFFSET, DISTINCT, LIKE, IN, BETWEEN, IS NULL, aggregates and scalar functions — parsed and executed locally.</div>')+
    '<div class="snip-row">'+SNIPPETS.map(function(s,i){
      return '<button class="snip" data-i="'+i+'">'+s.label+'</button>'; }).join('')+'</div>'+
    (sbLang==='sql'?'<div class="codeblock" style="margin-top:14px;white-space:pre;color:var(--mut)">'+esc(SQL_SCHEMA)+'</div>':'')+
@@ -4075,30 +4151,107 @@ function openCoop(){
 }
 
 /* ================================================================
+   LEADERBOARD FILE SERVICE
+   The ladder lives in leaderboard.json, read and written by server.js.
+   With no server behind it — opened from the filesystem, or on a plain
+   static host — the board falls back to the accounts in this browser.
+================================================================ */
+var LB_API='api/leaderboard';
+var lbRemote=null;      /* last board read from the file, or null */
+var lbOnline=null;      /* null = not tried yet */
+var lbTimer=null, lbPubT=null, lbRetryAt=0;
+function lbSummary(){
+  return {handle:ACTIVE,xp:state.xp,mastery:integrity(),year:state.year,
+    quests:Object.keys(state.quests).filter(function(k){ return state.quests[k]; }).length};
+}
+function lbReq(method,body,qs){
+  if(typeof fetch!=='function') return Promise.reject(new Error('fetch unavailable'));
+  var init={method:method||'GET',cache:'no-store'}, ctl=null, timer=null;
+  try{ ctl=new AbortController(); init.signal=ctl.signal;
+       timer=setTimeout(function(){ try{ ctl.abort(); }catch(e){} },4000); }catch(e){}
+  if(body){ init.headers={'Content-Type':'application/json'}; init.body=JSON.stringify(body); }
+  function clear(){ if(timer) clearTimeout(timer); }
+  return fetch(LB_API+(qs||''),init).then(function(r){
+    clear();
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    return r.json();
+  },function(e){ clear(); throw e; });
+}
+/* resolves true when the view should repaint */
+function lbRefresh(){
+  return lbReq('GET').then(function(board){
+    var changed=(lbOnline!==true)||JSON.stringify(board)!==JSON.stringify(lbRemote);
+    lbRemote=board; lbOnline=true; lbRetryAt=0;
+    return changed;
+  },function(){
+    var changed=(lbOnline!==false);
+    lbOnline=false; lbRemote=null; lbRetryAt=Date.now()+30000;
+    return changed;
+  });
+}
+function lbPublish(){
+  if(!ACTIVE) return Promise.resolve(false);
+  return lbReq('POST',lbSummary()).then(function(board){
+    lbRemote=board; lbOnline=true; lbRetryAt=0;
+    return true;
+  },function(){ lbOnline=false; lbRetryAt=Date.now()+30000; return false; });
+}
+/* Called from save(), so it is debounced and backs off while the file is
+   out of reach rather than retrying on every keystroke's worth of XP. */
+function lbPublishSoon(){
+  if(!ACTIVE) return;
+  clearTimeout(lbPubT);
+  lbPubT=setTimeout(function(){
+    if(!ACTIVE) return;
+    if(lbOnline===false&&Date.now()<lbRetryAt) return;
+    lbPublish().then(function(ok){
+      if(ok&&state.view==='leaderboard') renderLeaderboard();
+    });
+  },1500);
+}
+
+/* ================================================================
    VIEW :: LEADERBOARD
 ================================================================ */
 var lbTab='ops';
+/* Merged in priority order, first entry for a handle wins: your own live
+   figures, then leaderboard.json, then accounts registered in this browser,
+   then — only when the file is unreachable — the simulated study group. */
 function ladderRows(){
-  var mine=String(ACTIVE||'').toLowerCase();
-  var rows=accAll().users.map(function(a){
-    var s=a.sum||{}, me=(mine&&String(a.u).toLowerCase()===mine);
-    return {name:a.u, me:me, sim:false, on:me,
-      xp:me?state.xp:(s.xp||0),
-      mastery:me?integrity():(s.mastery||0),
-      quests:me?Object.keys(state.quests).filter(function(k){ return state.quests[k]; }).length:(s.quests||0),
-      seen:me?Date.now():(s.seen||a.created||0)};
+  var rows=[], seen=Object.create(null);
+  function add(r){
+    var k=String(r.name).toLowerCase();
+    if(seen[k]) return;
+    seen[k]=true; rows.push(r);
+  }
+  if(ACTIVE){
+    var s=lbSummary();
+    add({name:ACTIVE,me:true,sim:false,on:true,xp:s.xp,mastery:s.mastery,quests:s.quests,seen:Date.now()});
+  }
+  if(lbRemote&&Array.isArray(lbRemote.operators)){
+    lbRemote.operators.forEach(function(o){
+      add({name:o.handle,me:false,sim:!!o.sim,on:false,xp:o.xp|0,mastery:o.mastery|0,
+        quests:o.quests|0,seen:Date.parse(o.updated)||0});
+    });
+  }
+  accAll().users.forEach(function(a){
+    var sum=a.sum||{};
+    add({name:a.u,me:false,sim:false,on:false,xp:sum.xp||0,mastery:sum.mastery||0,
+      quests:sum.quests||0,seen:sum.seen||a.created||0});
   });
-  PEERS.forEach(function(p){
-    rows.push({name:p.cs,me:false,sim:true,on:p.on,xp:p.xp,mastery:p.mastery,quests:p.quests,
-      seen:p.on?Date.now():Date.now()-864e5});
-  });
+  if(!lbRemote){
+    PEERS.forEach(function(p){
+      add({name:p.cs,me:false,sim:true,on:p.on,xp:p.xp,mastery:p.mastery,quests:p.quests,
+        seen:p.on?Date.now():Date.now()-864e5});
+    });
+  }
   rows.sort(function(a,b){ return (b.xp-a.xp)||a.name.localeCompare(b.name); });
   return rows;
 }
-function lastSeen(t){
+function lastSeen(t,recent){
   if(!t) return 'NEVER';
   var d=Date.now()-t;
-  if(d<9e5) return 'ONLINE';
+  if(d<9e5) return recent||'ONLINE';
   if(d<36e5) return Math.round(d/6e4)+'M AGO';
   if(d<864e5) return Math.round(d/36e5)+'H AGO';
   return Math.round(d/864e5)+'D AGO';
@@ -4138,17 +4291,26 @@ function renderLeaderboard(){
          '<div class="lb-rk">POOLED XP ACROSS THE ROSTER</div></div>'+
          '<div class="lb-xp"><b>'+x.pool.toLocaleString()+'</b><span>POOL</span></div></div>';
       }).join('');
+  var live=(lbOnline===true);
+  var srcChip=(lbOnline===null)
+    ? '<span class="chip">READING leaderboard.json…</span>'
+    : (live?'<span class="chip chip-acc">LIVE · leaderboard.json</span>'
+           :'<span class="chip chip-warn">LOCAL ONLY</span>');
+  var srcNote=(lbTab!=='ops')?''
+    :'<div style="color:var(--mut);font-size:11px;margin-top:14px">'+(live
+      ? ('Ranked from leaderboard.json'+(lbRemote&&lbRemote.updated?(' · last written '+lastSeen(Date.parse(lbRemote.updated),'JUST NOW')):'')+
+         '. Your card publishes itself as you earn XP. Entries marked SIM are the seeded study group.')
+      : 'No leaderboard server answering, so this is just the accounts in this browser. Run <b style="color:var(--acc)">node server.js</b> in the PRISM folder and open the address it prints to share one board.')+'</div>';
   mount(
-  '<div class="vhead"><div class="v-kick">OPERATOR LADDER · THIS DEVICE + SYNDICATE NET</div>'+
+  '<div class="vhead"><div class="v-kick">OPERATOR LADDER · '+(live?'SHARED JSON FILE':'THIS DEVICE')+'</div>'+
   '<div class="v-title">Leaderboard</div></div>'+
   '<div class="lb-grid"><div>'+
    '<div class="g gpad"><div class="sec-h"><span>'+(lbTab==='ops'?'Operators':'Syndicates')+'</span>'+
-    '<span class="rt"><span class="seg">'+
+    '<span class="rt">'+srcChip+'<button class="btn btn-sm" id="lb-sync">'+iconHtml('refresh-cw')+'</button>'+
+    '<span class="seg">'+
      '<button id="lb-ops"'+(lbTab==='ops'?' class="on"':'')+'>OPERATORS</button>'+
      '<button id="lb-syn"'+(lbTab==='syn'?' class="on"':'')+'>SYNDICATES</button></span></span></div>'+
-    board+
-    (lbTab==='ops'?'<div style="color:var(--mut);font-size:11px;margin-top:14px">'+
-     'Accounts registered in this browser rank alongside the syndicate net. Entries marked SIM are the simulated study group.</div>':'')+
+    board+srcNote+
    '</div>'+
   '</div><div>'+
    '<div class="g gpad" style="margin-bottom:16px"><div class="sec-h"><span>Your standing</span></div>'+
@@ -4181,7 +4343,22 @@ function renderLeaderboard(){
   '</div></div>');
   $('#lb-ops').onclick=function(){ lbTab='ops'; renderLeaderboard(); };
   $('#lb-syn').onclick=function(){ lbTab='syn'; renderLeaderboard(); };
+  $('#lb-sync').onclick=function(){
+    lbRetryAt=0;
+    lbPublish().then(lbRefresh).then(function(){
+      if(state.view==='leaderboard') renderLeaderboard();
+      toast(lbOnline?'LEADERBOARD SYNCED :: leaderboard.json':'NO LEADERBOARD SERVER ON THIS ADDRESS',lbOnline?'ok':'warn');
+    });
+  };
   refreshIcons();
+  /* keep the open board current without hammering the file */
+  if(lbTimer){ clearInterval(lbTimer); lbTimer=null; }
+  lbTimer=setInterval(function(){
+    if(state.view!=='leaderboard'){ clearInterval(lbTimer); lbTimer=null; return; }
+    if(lbOnline===false&&Date.now()<lbRetryAt) return;
+    lbRefresh().then(function(changed){ if(changed&&state.view==='leaderboard') renderLeaderboard(); });
+  },20000);
+  lbRefresh().then(function(changed){ if(changed&&state.view==='leaderboard') renderLeaderboard(); });
 }
 
 /* ================================================================
